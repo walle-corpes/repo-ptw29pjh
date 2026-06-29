@@ -185,6 +185,9 @@ body,.topbar,.panel,.btn,.chip,.modal-card,.legend,.comm,.st-item,.fuel-cell,.an
 }
 .panel-open:hover{color:var(--blue2);transform:translateY(-1px) scale(1.05)}
 .layout:has(.panel.collapsed) .panel-open{display:block;animation:fadeIn .25s var(--ease) both}
+/* when the ☰ button is shown, push Leaflet zoom control down so they don't overlap */
+.leaflet-top.leaflet-left{transition:margin-top .2s var(--ease)}
+.layout:has(.panel.collapsed) .leaflet-top.leaflet-left{margin-top:52px}
 
 /* ---------- communities ---------- */
 .communities{padding:12px 14px;border-top:1px solid var(--line);background:var(--panel2)}
