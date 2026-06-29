@@ -153,6 +153,8 @@ body,.topbar,.panel,.btn,.chip,.modal-card,.legend,.comm,.st-item,.fuel-cell,.an
 .st-item:hover{background:var(--panel2);transform:translateX(2px)}
 .st-item:hover::before{transform:scaleY(1)}
 .st-dot{width:12px;height:12px;border-radius:50%;margin-top:4px;flex:0 0 auto;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.st-logo{flex:0 0 auto;width:40px;height:28px;border-radius:7px;background:#fff;border:1.5px solid var(--sc,var(--line));display:flex;align-items:center;justify-content:center;padding:2px 4px;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.st-logo img{max-width:100%;max-height:18px;object-fit:contain;display:block}
 .st-main{min-width:0;flex:1}
 .st-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .st-meta{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -224,6 +226,24 @@ body,.topbar,.panel,.btn,.chip,.modal-card,.legend,.comm,.st-item,.fuel-cell,.an
 .azs-pin.stale{opacity:.62;border-style:dashed}
 .azs-pin.fresh::before{content:"";position:absolute;inset:-5px;border-radius:inherit;border:2px solid currentColor;opacity:.6;animation:ripple 1.8s var(--ease) infinite}
 @keyframes ripple{0%{transform:scale(.7);opacity:.6}100%{transform:scale(1.7);opacity:0}}
+
+/* station marker — brand-logo chip */
+.azs-brand{
+  position:relative;box-sizing:border-box;
+  background:#fff;border:2.5px solid var(--sc,#64748b);border-radius:9px;
+  padding:0 7px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 9px rgba(0,0,0,.45),0 0 0 1px rgba(0,0,0,.04);
+  animation:pinDrop2 .42s var(--ease) both;transition:transform .2s var(--ease),box-shadow .2s var(--ease),filter .2s;
+}
+@keyframes pinDrop2{0%{opacity:0;transform:translateY(-14px) scale(.6)}70%{transform:translateY(2px) scale(1.04)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.azs-brand::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:0;height:0;border:6px solid transparent;border-top-color:var(--sc,#64748b);filter:drop-shadow(0 2px 1px rgba(0,0,0,.3))}
+.azs-brand img{object-fit:contain;display:block;pointer-events:none}
+.azs-sdot{position:absolute;top:-5px;right:-5px;width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.leaflet-marker-icon:hover .azs-brand{transform:translateY(-2px) scale(1.1);box-shadow:0 8px 18px rgba(0,0,0,.5);z-index:1000;filter:brightness(1.02)}
+.azs-brand.stale{opacity:.6;border-style:dashed}
+.azs-brand.stale img{filter:grayscale(.6)}
+.azs-brand.fresh{box-shadow:0 3px 9px rgba(0,0,0,.45),0 0 0 3px color-mix(in srgb,var(--sc) 40%,transparent)}
+.azs-brand.fresh .azs-sdot::before{content:"";position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--sc);opacity:.6;animation:ripple 1.8s var(--ease) infinite}
 
 /* station name label shown when zoomed in */
 .azs-label{

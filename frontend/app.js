@@ -23,6 +23,19 @@ const KNOWN_BRANDS = [
   "Трасса", "Teboil", "Иркутскнефтепродукт",
 ];
 
+// Официальные логотипы брендов (файл + натуральные пропорции для маркера).
+const BRAND_LOGO = {
+  "Лукойл":       { f: "lukoil",      w: 388, h: 80 },
+  "Роснефть":     { f: "rosneft",     w: 125, h: 80 },
+  "Газпромнефть": { f: "gazpromneft", w: 167, h: 80 },
+  "Газпром":      { f: "gazprom",     w: 166, h: 80 },
+  "Татнефть":     { f: "tatneft",     w: 290, h: 80 },
+  "Башнефть":     { f: "bashneft",    w: 104, h: 80 },
+  "Teboil":       { f: "teboil",      w: 292, h: 80 },
+  "Новатэк":      { f: "novatek",     w: 280, h: 80 },
+  "Шелл":         { f: "shell",       w: 220, h: 80 },
+};
+
 const state = {
   meta: null,
   fuel: null,            // selected fuel filter
@@ -101,9 +114,24 @@ function initMap() {
 }
 
 const PUMP_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5z"/></svg>';
-function markerIcon(color, stale) {
+function markerIcon(color, stale, brand) {
   const c = COLORS[color] || COLORS.gray;
   const fresh = !stale && color && color !== "gray";
+  const logo = BRAND_LOGO[brand];
+  if (logo) {
+    const lh = 18;                                   // высота логотипа
+    const lw = Math.min(64, Math.round(lh * logo.w / logo.h));
+    const cw = lw + 14;                              // ширина чипа
+    const ch = lh + 13;                              // высота тела чипа
+    const total = ch + 7;                            // + хвостик
+    return L.divIcon({
+      className: "",
+      html: `<div class="azs-brand ${stale ? "stale" : ""} ${fresh ? "fresh" : ""}" style="--sc:${c};width:${cw}px;height:${ch}px">`
+          + `<img src="/img/brands/${logo.f}.png" alt="" style="height:${lh}px;width:${lw}px" draggable="false">`
+          + `<span class="azs-sdot" style="background:${c}"></span></div>`,
+      iconSize: [cw, total], iconAnchor: [cw / 2, total], popupAnchor: [0, -total + 2],
+    });
+  }
   return L.divIcon({
     className: "",
     html: `<div class="azs-pin ${stale ? "stale" : ""} ${fresh ? "fresh" : ""}" style="background:${c};color:${c}"><span class="azs-pin-ic">${PUMP_SVG}</span></div>`,
@@ -144,7 +172,7 @@ async function loadStations() {
   const markers = [];
   for (const s of data.stations) {
     state.stations.set(s.id, s);
-    const m = L.marker([s.lat, s.lon], { icon: markerIcon(s.color, s.stale) });
+    const m = L.marker([s.lat, s.lon], { icon: markerIcon(s.color, s.stale, s.brand) });
     m.on("click", () => openStation(s.id));
     state.markers.set(s.id, m);
     markers.push(m);
@@ -173,7 +201,9 @@ function renderList() {
   if (!arr.length) { setListEmpty("В этой области нет заправок. Подвиньте карту."); return; }
   el.innerHTML = arr.map((s) => `
     <div class="st-item" data-id="${s.id}">
-      <div class="st-dot" style="background:${COLORS[s.color] || COLORS.gray}"></div>
+      ${BRAND_LOGO[s.brand]
+        ? `<div class="st-logo" style="--sc:${COLORS[s.color] || COLORS.gray}"><img src="/img/brands/${BRAND_LOGO[s.brand].f}.png" alt=""></div>`
+        : `<div class="st-dot" style="background:${COLORS[s.color] || COLORS.gray}"></div>`}
       <div class="st-main">
         <div class="st-name">${esc(s.name)}</div>
         <div class="st-meta">${s.brand ? esc(s.brand) + " · " : ""}${s.status ? statusLabel(s.status) : "нет данных"}${s.stale ? " · устарело" : ""}</div>
