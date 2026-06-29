@@ -77,12 +77,24 @@ function distKm(a, b) {
 }
 
 /* ---------------- map ---------------- */
-let map, cluster;
+let map, cluster, baseLayer;
+const TILES = {
+  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  light: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+};
+function setBaseLayer(theme) {
+  if (!map) return;
+  const url = TILES[theme] || TILES.dark;
+  if (baseLayer) map.removeLayer(baseLayer);
+  baseLayer = L.tileLayer(url, {
+    maxZoom: 20, subdomains: "abcd",
+    attribution: "© OpenStreetMap, © CARTO",
+  }).addTo(map);
+  if (baseLayer.bringToBack) baseLayer.bringToBack();
+}
 function initMap() {
   map = L.map("map", { zoomControl: true, preferCanvas: true }).setView([55.75, 37.62], 11);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19, attribution: "© OpenStreetMap",
-  }).addTo(map);
+  setBaseLayer(document.documentElement.dataset.theme === "light" ? "light" : "dark");
   cluster = L.markerClusterGroup({ maxClusterRadius: 55, disableClusteringAtZoom: 15, chunkedLoading: true });
   map.addLayer(cluster);
   map.on("moveend", debounce(loadStations, 350));
@@ -452,6 +464,7 @@ function applyTheme(t) {
     btn.textContent = t === "light" ? "☀️" : "🌙";
     btn.title = t === "light" ? "Тёмная тема" : "Светлая тема";
   }
+  setBaseLayer(t === "light" ? "light" : "dark");
 }
 function toggleTheme() {
   const cur = document.documentElement.dataset.theme === "light" ? "light" : "dark";
