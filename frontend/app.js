@@ -102,9 +102,11 @@ function initMap() {
 
 const PUMP_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5z"/></svg>';
 function markerIcon(color, stale) {
+  const c = COLORS[color] || COLORS.gray;
+  const fresh = !stale && color && color !== "gray";
   return L.divIcon({
     className: "",
-    html: `<div class="azs-pin ${stale ? "stale" : ""}" style="background:${COLORS[color] || COLORS.gray}"><span class="azs-pin-ic">${PUMP_SVG}</span></div>`,
+    html: `<div class="azs-pin ${stale ? "stale" : ""} ${fresh ? "fresh" : ""}" style="background:${c};color:${c}"><span class="azs-pin-ic">${PUMP_SVG}</span></div>`,
     iconSize: [28, 36], iconAnchor: [14, 34], popupAnchor: [0, -32],
   });
 }
