@@ -27,15 +27,36 @@ LAT_MIN, LAT_MAX = 41.0, 78.0
 LON_MIN, LON_MAX = 19.0, 180.0
 TILE = 3.0  # degrees per tile
 
+# Load most-populated regions first so users see their city quickly. Tiles are
+# ordered by the distance of their center to the nearest of these hubs.
+PRIORITY_HUBS = [
+    (55.75, 37.62),  # Москва
+    (59.94, 30.31),  # Санкт-Петербург
+    (56.84, 60.61),  # Екатеринбург
+    (55.03, 82.92),  # Новосибирск
+    (45.04, 38.98),  # Краснодар
+    (43.12, 131.89),  # Владивосток
+]
+
 
 def _tiles():
+    tiles = []
     lat = LAT_MIN
     while lat < LAT_MAX:
         lon = LON_MIN
         while lon < LON_MAX:
-            yield (lat, lon, min(lat + TILE, LAT_MAX), min(lon + TILE, LON_MAX))
+            tiles.append(
+                (lat, lon, min(lat + TILE, LAT_MAX), min(lon + TILE, LON_MAX))
+            )
             lon += TILE
         lat += TILE
+
+    def _priority(t):
+        cy, cx = (t[0] + t[2]) / 2, (t[1] + t[3]) / 2
+        return min((cy - hy) ** 2 + (cx - hx) ** 2 for hy, hx in PRIORITY_HUBS)
+
+    tiles.sort(key=_priority)
+    return tiles
 
 
 def _query(bbox):
