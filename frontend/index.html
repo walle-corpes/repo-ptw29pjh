@@ -8,6 +8,10 @@
 <meta name="theme-color" content="#0A1222" />
 <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png" />
 <link rel="apple-touch-icon" href="/img/icon-180.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="АЗС Табло" />
+<meta name="mobile-web-app-capable" content="yes" />
 <link rel="manifest" href="/manifest.webmanifest" />
 <link rel="stylesheet" href="/vendor/leaflet.css" />
 <link rel="stylesheet" href="/vendor/MarkerCluster.css" />
@@ -134,6 +138,37 @@
       <button class="modal-close" data-close="subs-modal">✕</button>
     </div>
     <div id="subs-body" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- Install (PWA) prompt -->
+<div id="install-banner" class="install-banner" hidden>
+  <img src="/img/icon-192.png" alt="" class="install-ico" />
+  <div class="install-text">
+    <div class="install-ttl">Установите приложение</div>
+    <div class="install-sub">Карта заправок всегда под рукой — открывается с экрана телефона, как обычное приложение, и работает даже при слабой связи.</div>
+  </div>
+  <div class="install-actions">
+    <button id="install-yes" class="btn primary">Установить</button>
+    <button id="install-no" class="btn ghost" aria-label="Закрыть">Позже</button>
+  </div>
+</div>
+
+<!-- iOS install hint -->
+<div class="modal" id="ios-install-modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📲 Добавить на экран «Домой»</h3>
+      <button class="modal-close" data-close="ios-install-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="ios-pitch">Чтобы карта заправок всегда была под рукой, добавьте её на главный экран — она будет открываться как обычное приложение, на весь экран.</p>
+      <ol class="ios-steps">
+        <li>Нажмите кнопку <b>«Поделиться»</b> <span class="ios-share">􀈂</span> внизу Safari.</li>
+        <li>Выберите <b>«На экран “Домой”»</b>.</li>
+        <li>Нажмите <b>«Добавить»</b> — готово!</li>
+      </ol>
+    </div>
   </div>
 </div>
 

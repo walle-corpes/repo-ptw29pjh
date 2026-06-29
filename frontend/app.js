@@ -729,5 +729,66 @@ async function boot() {
   await loadStations();
   // auto-locate softly on load
   if (navigator.geolocation) setTimeout(locate, 600);
+  initPWA();
 }
+
+/* ---------------- PWA: install & offline ---------------- */
+function initPWA() {
+  // register service worker for offline + installability
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  }
+
+  const banner = document.getElementById("install-banner");
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+  const dismissed = localStorage.getItem("azs_install") === "0";
+  if (isStandalone) return; // already installed — nothing to offer
+
+  let deferred = null;
+  const showBanner = () => {
+    if (!banner || dismissed) return;
+    banner.hidden = false;
+  };
+  const hideBanner = (remember) => {
+    if (!banner) return;
+    banner.classList.add("closing");
+    setTimeout(() => { banner.hidden = true; banner.classList.remove("closing"); }, 300);
+    if (remember) localStorage.setItem("azs_install", "0");
+  };
+
+  // Android / Chromium: native install flow
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferred = e;
+    setTimeout(showBanner, 2500);
+  });
+  window.addEventListener("appinstalled", () => { hideBanner(true); toast("Готово! Приложение на вашем экране 🎉"); });
+
+  const yes = document.getElementById("install-yes");
+  const no = document.getElementById("install-no");
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+
+  if (yes) yes.addEventListener("click", async () => {
+    if (deferred) {
+      deferred.prompt();
+      const { outcome } = await deferred.userChoice;
+      deferred = null;
+      hideBanner(outcome === "accepted");
+    } else if (isIOS) {
+      hideBanner(false);
+      show("ios-install-modal");
+    } else {
+      hideBanner(true);
+      toast("Откройте меню браузера → «Установить приложение»");
+    }
+  });
+  if (no) no.addEventListener("click", () => hideBanner(true));
+
+  // iOS Safari has no beforeinstallprompt — offer the manual hint
+  if (isIOS && !dismissed) setTimeout(showBanner, 3000);
+}
+
 boot();

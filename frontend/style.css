@@ -442,6 +442,33 @@ table.an tbody tr:hover{background:var(--panel2)}
 .azs-cluster:hover{transform:scale(1.1)}
 @keyframes clusterIn{0%{opacity:0;transform:scale(.5)}100%{opacity:1;transform:scale(1)}}
 
+/* ---------- install (PWA) banner ---------- */
+.install-banner{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(0);
+  z-index:1400;display:flex;align-items:center;gap:14px;width:min(440px,calc(100% - 24px));
+  padding:14px 16px;border-radius:18px;border:1px solid var(--line);
+  background:var(--overlay);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  box-shadow:var(--shadow),0 0 0 1px rgba(31,107,255,.1);animation:installIn .5s var(--ease) both;
+}
+@keyframes installIn{from{opacity:0;transform:translateX(-50%) translateY(24px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.install-banner.closing{animation:installOut .3s var(--ease) both}
+@keyframes installOut{to{opacity:0;transform:translateX(-50%) translateY(24px)}}
+.install-ico{width:46px;height:46px;border-radius:12px;flex:0 0 auto;box-shadow:var(--shadow-sm)}
+.install-text{flex:1;min-width:0}
+.install-ttl{font-weight:800;font-size:14.5px}
+.install-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px}
+.install-actions{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+.install-actions .btn{padding:8px 14px;font-size:13px;white-space:nowrap}
+.install-actions .btn.ghost{padding:5px 14px;font-size:12px;color:var(--muted)}
+.ios-pitch{margin:0 0 12px;font-size:14px;line-height:1.5}
+.ios-steps{margin:0;padding-left:20px;font-size:14px;line-height:1.7}
+.ios-share{display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center;border-radius:6px;background:var(--blue2);color:#fff;font-size:13px;vertical-align:middle}
+@media(max-width:720px){
+  .install-banner{flex-wrap:wrap;gap:10px}
+  .install-actions{flex-direction:row;width:100%}
+  .install-actions .btn.primary{flex:1}
+}
+
 /* keyframes */
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
