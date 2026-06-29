@@ -42,9 +42,10 @@ def _query(bbox):
     s, w, n, e = bbox
     return (
         f"[out:json][timeout:120];"
+        f'area["ISO3166-1"="RU"][admin_level=2]->.ru;'
         f"("
-        f'node["amenity"="fuel"]({s},{w},{n},{e});'
-        f'way["amenity"="fuel"]({s},{w},{n},{e});'
+        f'node["amenity"="fuel"](area.ru)({s},{w},{n},{e});'
+        f'way["amenity"="fuel"](area.ru)({s},{w},{n},{e});'
         f");"
         f"out tags center;"
     )
