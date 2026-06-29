@@ -117,12 +117,13 @@ function setBaseLayer(theme) {
   if (baseLayer) map.removeLayer(baseLayer);
   baseLayer = L.tileLayer(url, {
     maxZoom: 20, subdomains: "abcd",
-    attribution: "© OpenStreetMap, © CARTO",
+    attribution: '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> · CARTO',
   }).addTo(map);
   if (baseLayer.bringToBack) baseLayer.bringToBack();
 }
 function initMap() {
-  map = L.map("map", { zoomControl: true, preferCanvas: true }).setView([55.75, 37.62], 11);
+  map = L.map("map", { zoomControl: true, preferCanvas: true, attributionControl: false }).setView([55.75, 37.62], 11);
+  L.control.attribution({ prefix: false, position: "bottomright" }).addTo(map);
   setBaseLayer(document.documentElement.dataset.theme === "light" ? "light" : "dark");
   cluster = L.markerClusterGroup({
     maxClusterRadius: 55, disableClusteringAtZoom: 13, chunkedLoading: true,
@@ -255,6 +256,7 @@ function renderList() {
   el.querySelectorAll(".st-item").forEach((it) =>
     it.addEventListener("click", () => {
       const id = +it.dataset.id, s = state.stations.get(id);
+      if (isMobile()) { document.getElementById("panel").classList.add("collapsed"); setTimeout(() => map.invalidateSize(), 200); }
       map.setView([s.lat, s.lon], Math.max(map.getZoom(), 15));
       openStation(id);
     }));
@@ -701,13 +703,23 @@ function bindUI() {
   const refitMap = () => { if (map) setTimeout(() => map.invalidateSize(), 340); };
   document.getElementById("panel-toggle").addEventListener("click", () => { panel.classList.add("collapsed"); refitMap(); });
   document.getElementById("panel-open").addEventListener("click", () => { panel.classList.toggle("collapsed"); refitMap(); });
+  const backdrop = document.getElementById("panel-backdrop");
+  if (backdrop) backdrop.addEventListener("click", () => { panel.classList.add("collapsed"); refitMap(); });
   document.getElementById("search").addEventListener("keydown", (e) => { if (e.key === "Enter") doSearch(e.target.value); });
 }
+
+const isMobile = () => window.matchMedia("(max-width:720px)").matches;
 
 /* ---------------- boot ---------------- */
 async function boot() {
   initMap();
   bindUI();
+  // on phones: map is primary view, filters open via ☰
+  if (isMobile()) document.getElementById("panel").classList.add("collapsed");
+  const refit = () => { if (map) map.invalidateSize(); };
+  setTimeout(refit, 100);
+  window.addEventListener("resize", debounce(refit, 250));
+  window.addEventListener("orientationchange", () => setTimeout(refit, 300));
   try {
     state.meta = await api("/meta");
     buildFilters();

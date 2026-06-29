@@ -113,6 +113,8 @@ body,.topbar,.panel,.btn,.chip,.modal-card,.legend,.comm,.st-item,.fuel-cell,.an
 
 /* ---------- layout ---------- */
 .layout{display:flex;height:100%}
+#panel-backdrop{display:none}
+@media(max-width:720px){#panel-backdrop{display:block}}
 .map-wrap{position:relative;flex:1;min-width:0}
 #map{height:100%}
 .panel{padding-top:60px}
@@ -193,6 +195,9 @@ body,.topbar,.panel,.btn,.chip,.modal-card,.legend,.comm,.st-item,.fuel-cell,.an
 .leaflet-control-zoom a:hover{background:var(--blue2)!important;color:#fff!important;transform:translateY(-1px)}
 .leaflet-bar{border:0!important;box-shadow:none!important}
 .leaflet-bar a{box-shadow:var(--shadow-sm)!important}
+/* compact, unobtrusive attribution (no Leaflet flag) */
+.leaflet-control-attribution{background:var(--overlay)!important;color:var(--muted)!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:8px 0 0 0;font-size:10px!important;padding:2px 7px!important;box-shadow:none!important}
+.leaflet-control-attribution a{color:var(--blue2)!important}
 
 /* floating locate FAB */
 .map-fab{
@@ -453,15 +458,37 @@ table.an tbody tr:hover{background:var(--panel2)}
 }
 
 @media(max-width:720px){
-  .panel{position:absolute;top:60px;bottom:0;left:0;width:86%;flex-basis:86%;box-shadow:var(--shadow);padding-top:0}
+  .panel{position:absolute;top:0;bottom:0;left:0;width:88%;max-width:340px;flex-basis:88%;box-shadow:var(--shadow);padding-top:60px;z-index:1100}
   .panel.collapsed{margin-left:-100%}
   .hide-sm{display:none}
   .brand-sub{display:none}
+  .brand-logo{height:38px}
+  .brand-title{font-size:15px}
   .an-cards{grid-template-columns:1fr 1fr}
+  /* tighter floating header on phones */
+  .topbar{padding:0 10px;height:56px}
+  .topbar::before{height:88px}
+  .topbar-actions{gap:6px}
+  /* the floating 📍 FAB handles geolocation on phones */
+  #btn-locate{display:none}
+  .btn{padding:9px 10px;font-size:15px}
+  .btn.primary,.btn.donate{padding:9px 11px}
+  /* filters scroll within the overlay panel */
+  .filters{max-height:none}
+  /* dim backdrop behind the open overlay panel */
+  #panel-backdrop{position:fixed;inset:0;background:rgba(4,9,18,.45);z-index:1050;opacity:0;visibility:hidden;transition:opacity .25s var(--ease),visibility .25s}
+  .layout:not(:has(.panel.collapsed)) #panel-backdrop{opacity:1;visibility:visible}
+  /* hide the map attribution flag + label on small screens */
+  .leaflet-control-attribution{display:none!important}
   /* station details as a draggable bottom-sheet */
+  .modal{align-items:flex-end}
   .modal-card{max-height:90vh;border-radius:20px 20px 0 0}
   .modal-card::before{content:"";display:block;width:40px;height:4px;border-radius:99px;background:var(--line);margin:8px auto 2px}
   .modal-head{padding-top:8px}
-  .map-fab{bottom:24px;right:12px}
-  .legend{bottom:90px}
+  .map-fab{bottom:24px;right:12px;width:48px;height:48px}
+  .legend{bottom:84px;left:10px}
+  /* zoom control clears the floating header; and the ☰ button when panel collapsed */
+  .leaflet-top.leaflet-left{margin-top:60px}
+  .layout:has(.panel.collapsed) .leaflet-top.leaflet-left{margin-top:112px}
+  .panel-open{top:64px}
 }
