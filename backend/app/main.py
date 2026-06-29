@@ -2,7 +2,7 @@ import json
 import secrets
 import time
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -18,8 +18,10 @@ from .config import (
     STALE_HOURS,
     STATUS_LABELS,
     STATUSES,
+    TELEGRAM_ENABLED,
 )
 from .status import STATUS_COLOR, fuel_statuses, overall_maps, station_overall, window_expr
+from .telegram import notify_new_report
 
 try:
     from PIL import Image  # noqa
@@ -131,7 +133,7 @@ def station_detail(station_id: int):
     reports = conn.execute(
         """
         SELECT id, status, fuel_type, comment, photo, confirms, flags, created_at
-        FROM reports WHERE station_id=? AND hidden=0
+        FROM reports WHERE station_id=? AND hidden=0 AND moderation='approved'
         ORDER BY created_at DESC LIMIT 30
         """,
         (station_id,),
@@ -182,6 +184,7 @@ def _save_photo(upload: UploadFile) -> str | None:
 
 @app.post("/api/report")
 async def create_report(
+    background: BackgroundTasks,
     station_id: int = Form(...),
     status: str = Form(...),
     fuel_type: str | None = Form(None),
@@ -214,14 +217,19 @@ async def create_report(
     photo_name = _save_photo(photo) if photo else None
     if comment:
         comment = comment.strip()[:500]
+    # moderation: when the Telegram bot is configured, hold reports for
+    # admin approval; otherwise publish immediately (legacy behaviour).
+    moderation = "pending" if TELEGRAM_ENABLED else "approved"
     with db.cursor() as cur:
         cur.execute(
-            "INSERT INTO reports (station_id, status, fuel_type, comment, photo, device_id) "
-            "VALUES (?,?,?,?,?,?)",
-            (station_id, status, fuel_type, comment, photo_name, device_id),
+            "INSERT INTO reports (station_id, status, fuel_type, comment, photo, device_id, moderation) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (station_id, status, fuel_type, comment, photo_name, device_id, moderation),
         )
         rid = cur.lastrowid
-    return {"ok": True, "report_id": rid}
+    if moderation == "pending":
+        background.add_task(notify_new_report, rid)
+    return {"ok": True, "report_id": rid, "pending": moderation == "pending"}
 
 
 # ---------------------------------------------------------------- confirm / flag
@@ -317,7 +325,7 @@ def analytics():
         WITH latest AS (
             SELECT r.station_id, r.status,
                    ROW_NUMBER() OVER (PARTITION BY r.station_id ORDER BY r.created_at DESC) rn
-            FROM reports r WHERE r.hidden=0 AND r.created_at >= datetime('now', ?)
+            FROM reports r WHERE r.hidden=0 AND r.moderation='approved' AND r.created_at >= datetime('now', ?)
         )
         SELECT COALESCE(s.region, 'Не указан') region,
                SUM(CASE WHEN l.status='none' THEN 1 ELSE 0 END) no_fuel,
@@ -336,7 +344,7 @@ def analytics():
                SUM(CASE WHEN status='none' THEN 1 ELSE 0 END) no_fuel,
                SUM(CASE WHEN status='queue' THEN 1 ELSE 0 END) queues,
                COUNT(*) total
-        FROM reports WHERE hidden=0 AND created_at >= datetime('now','-7 days')
+        FROM reports WHERE hidden=0 AND moderation='approved' AND created_at >= datetime('now','-7 days')
         GROUP BY hour ORDER BY hour
         """,
     ).fetchall()

@@ -18,6 +18,18 @@ STALE_HOURS = float(os.environ.get("AZS_STALE_HOURS", 24))     # after this, sta
 # Report rate limit per device (seconds between reports for the same station)
 REPORT_COOLDOWN_SEC = int(os.environ.get("AZS_REPORT_COOLDOWN", 30))
 
+# --- Telegram moderation bot ---
+# When a bot token is set, new reports go to 'pending' and require admin
+# approval via the Telegram bot before they appear on the map. When unset,
+# reports are auto-approved (publish immediately) so the site works as before.
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_ADMIN_IDS = [
+    s.strip() for s in os.environ.get("TELEGRAM_ADMIN_IDS", "").split(",") if s.strip()
+]
+# Public base URL used to build links/photos in moderation messages
+PUBLIC_BASE_URL = os.environ.get("AZS_PUBLIC_URL", "http://89.108.88.245").rstrip("/")
+TELEGRAM_ENABLED = bool(TELEGRAM_BOT_TOKEN)
+
 # Fuel types tracked
 FUEL_TYPES = ["ai92", "ai95", "ai98", "dt", "gas"]
 FUEL_LABELS = {

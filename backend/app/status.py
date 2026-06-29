@@ -21,7 +21,8 @@ def station_overall(conn, station_id):
         """
         SELECT status, created_at, confirms
         FROM reports
-        WHERE station_id=? AND hidden=0 AND created_at >= datetime('now', ?)
+        WHERE station_id=? AND hidden=0 AND moderation='approved'
+          AND created_at >= datetime('now', ?)
         ORDER BY created_at DESC LIMIT 1
         """,
         (station_id, window_expr(STALE_HOURS)),
@@ -29,7 +30,7 @@ def station_overall(conn, station_id):
     if not row:
         return None, None, 0, False
     fresh = conn.execute(
-        "SELECT 1 FROM reports WHERE station_id=? AND hidden=0 "
+        "SELECT 1 FROM reports WHERE station_id=? AND hidden=0 AND moderation='approved' "
         "AND created_at >= datetime('now', ?) LIMIT 1",
         (station_id, window_expr(FRESH_HOURS)),
     ).fetchone()
@@ -51,7 +52,7 @@ def overall_maps(conn):
             SELECT station_id, status, created_at, confirms,
                    ROW_NUMBER() OVER (PARTITION BY station_id ORDER BY created_at DESC) rn
             FROM reports
-            WHERE hidden=0 AND created_at >= datetime('now', ?)
+            WHERE hidden=0 AND moderation='approved' AND created_at >= datetime('now', ?)
         )
         SELECT station_id, status, created_at, confirms FROM latest WHERE rn=1
         """,
@@ -61,7 +62,7 @@ def overall_maps(conn):
         latest[r["station_id"]] = (r["status"], r["created_at"], r["confirms"])
     fresh_rows = conn.execute(
         "SELECT DISTINCT station_id FROM reports "
-        "WHERE hidden=0 AND created_at >= datetime('now', ?)",
+        "WHERE hidden=0 AND moderation='approved' AND created_at >= datetime('now', ?)",
         (window_expr(FRESH_HOURS),),
     ).fetchall()
     fresh_set = {r["station_id"] for r in fresh_rows}
@@ -75,7 +76,7 @@ def fuel_statuses(conn, station_id):
         row = conn.execute(
             """
             SELECT status, created_at FROM reports
-            WHERE station_id=? AND fuel_type=? AND hidden=0
+            WHERE station_id=? AND fuel_type=? AND hidden=0 AND moderation='approved'
               AND created_at >= datetime('now', ?)
             ORDER BY created_at DESC LIMIT 1
             """,

@@ -6,6 +6,7 @@ After=network.target
 Type=simple
 WorkingDirectory=/opt/azs-online
 Environment=AZS_DATA_DIR=/opt/azs-online/backend/data
+EnvironmentFile=-/opt/azs-online/backend/.env
 ExecStart=/opt/azs-online/.venv/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8011 --workers 1
 Restart=always
 RestartSec=3

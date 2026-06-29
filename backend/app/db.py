@@ -95,10 +95,23 @@ CREATE TABLE IF NOT EXISTS meta (
 """
 
 
+def _migrate(conn):
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(reports)")}
+    if "moderation" not in cols:
+        # existing reports stay visible; new ones get set by the API layer
+        conn.execute(
+            "ALTER TABLE reports ADD COLUMN moderation TEXT NOT NULL DEFAULT 'approved'"
+        )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_reports_moderation ON reports(moderation, created_at)"
+    )
+
+
 def init_db():
     conn = _connect()
     try:
         conn.executescript(SCHEMA)
+        _migrate(conn)
         conn.commit()
     finally:
         conn.close()

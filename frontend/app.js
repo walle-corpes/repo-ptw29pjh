@@ -451,8 +451,10 @@ async function submitReport() {
   const btn = document.getElementById("rep-submit");
   btn.disabled = true; btn.textContent = "Отправка…";
   try {
-    await api("/report", { method: "POST", body: fd });
-    toast("Спасибо! Статус обновлён");
+    const res = await api("/report", { method: "POST", body: fd });
+    toast(res && res.pending
+      ? "Спасибо! Отчёт отправлен на проверку модератору"
+      : "Спасибо! Статус обновлён");
     await openStation(state.selected.id);
     loadStations();
     maybeThankPrompt();
