@@ -25,7 +25,7 @@
   </div>
   <div class="topbar-actions">
     <button id="btn-donate" class="btn donate" data-donate title="Поддержать проект">❤️ <span class="hide-sm">Поддержать</span></button>
-    <button id="btn-theme" class="btn ghost icon-only" title="Светлая / тёмная тема">🌙</button>
+    <button id="btn-theme" class="btn ghost icon-only" title="Светлая / тёмная тема" aria-label="Переключить светлую и тёмную тему">🌙</button>
     <button id="btn-analytics" class="btn ghost" title="Аналитика">📊 <span class="hide-sm">Аналитика</span></button>
     <button id="btn-subs" class="btn ghost" title="Мои подписки">🔔 <span class="hide-sm">Подписки</span></button>
     <button id="btn-locate" class="btn primary" title="Моё местоположение">📍 <span class="hide-sm">Рядом</span></button>
@@ -36,7 +36,7 @@
   <aside class="panel" id="panel">
     <div class="panel-head">
       <input id="search" type="search" placeholder="Поиск: город, бренд, название…" autocomplete="off" />
-      <button id="panel-toggle" class="panel-toggle" title="Свернуть">⟨</button>
+      <button id="panel-toggle" class="panel-toggle" title="Свернуть" aria-label="Свернуть панель">⟨</button>
     </div>
 
     <div class="filters">
@@ -93,7 +93,8 @@
   <main class="map-wrap">
     <div id="map"></div>
     <div class="legend" id="legend"></div>
-    <button id="panel-open" class="panel-open" title="Фильтры и список">☰</button>
+    <button id="panel-open" class="panel-open" title="Фильтры и список" aria-label="Открыть фильтры и список">☰</button>
+    <button id="map-locate" class="map-fab" title="Моё местоположение" aria-label="Найти меня на карте">📍</button>
   </main>
 </div>
 

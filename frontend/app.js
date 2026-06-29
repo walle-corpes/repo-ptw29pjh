@@ -124,7 +124,17 @@ function setBaseLayer(theme) {
 function initMap() {
   map = L.map("map", { zoomControl: true, preferCanvas: true }).setView([55.75, 37.62], 11);
   setBaseLayer(document.documentElement.dataset.theme === "light" ? "light" : "dark");
-  cluster = L.markerClusterGroup({ maxClusterRadius: 55, disableClusteringAtZoom: 13, chunkedLoading: true });
+  cluster = L.markerClusterGroup({
+    maxClusterRadius: 55, disableClusteringAtZoom: 13, chunkedLoading: true,
+    iconCreateFunction: (c) => {
+      const n = c.getChildCount();
+      const size = n < 10 ? 38 : n < 100 ? 46 : 56;
+      return L.divIcon({
+        html: `<div class="azs-cluster" style="width:${size}px;height:${size}px"><span>${n}</span></div>`,
+        className: "", iconSize: [size, size],
+      });
+    },
+  });
   map.addLayer(cluster);
   map.on("moveend", debounce(loadStations, 350));
 }
@@ -179,6 +189,7 @@ async function loadStations() {
   if (state.status) params.set("status", state.status);
   if (state.brands.size) params.set("brands", [...state.brands].join(","));
   if (state.onlyData) params.set("only_with_data", "true");
+  setListSkeleton();
   let data;
   try { data = await api("/stations?" + params); } catch (e) { return; }
 
@@ -203,8 +214,16 @@ async function loadStations() {
 function setListEmpty(msg) {
   document.getElementById("station-list").innerHTML = `<div class="empty">${msg}</div>`;
 }
+function setListSkeleton() {
+  const el = document.getElementById("station-list");
+  if (el.dataset.sk === "1") return;
+  el.dataset.sk = "1";
+  el.innerHTML = Array.from({ length: 7 }).map(() =>
+    `<div class="sk-item"><div class="sk-c sk-logo"></div><div class="sk-lines"><div class="sk-c sk-l1"></div><div class="sk-c sk-l2"></div></div></div>`).join("");
+}
 function renderList() {
   const el = document.getElementById("station-list");
+  el.dataset.sk = "0";
   let arr = [...state.stations.values()];
   if (state.user) {
     arr.forEach((s) => (s._d = distKm(state.user, s)));
@@ -215,17 +234,24 @@ function renderList() {
   }
   arr = arr.slice(0, 120);
   if (!arr.length) { setListEmpty("В этой области нет заправок. Подвиньте карту."); return; }
-  el.innerHTML = arr.map((s) => `
+  el.innerHTML = arr.map((s) => {
+    const col = COLORS[s.color] || COLORS.gray;
+    return `
     <div class="st-item" data-id="${s.id}">
       ${BRAND_LOGO[s.brand]
-        ? `<div class="st-logo" style="--sc:${COLORS[s.color] || COLORS.gray}"><img src="/img/brands/${BRAND_LOGO[s.brand].f}.png" alt=""></div>`
-        : `<div class="st-dot" style="background:${COLORS[s.color] || COLORS.gray}"></div>`}
+        ? `<div class="st-logo" style="--sc:${col}"><img src="/img/brands/${BRAND_LOGO[s.brand].f}.png" alt=""></div>`
+        : `<div class="st-dot" style="background:${col}"></div>`}
       <div class="st-main">
         <div class="st-name">${esc(s.name)}</div>
-        <div class="st-meta">${s.brand ? esc(s.brand) + " · " : ""}${s.status ? statusLabel(s.status) : "нет данных"}${s.stale ? " · устарело" : ""}</div>
+        <div class="st-sub">
+          <span class="st-pill" style="--pc:${col}">${s.status ? statusLabel(s.status) : "нет данных"}</span>
+          ${s.brand ? `<span class="st-brand">${esc(s.brand)}</span>` : ""}
+          ${s.stale ? `<span class="st-stale">⏱ устарело</span>` : ""}
+        </div>
       </div>
       ${s._d != null ? `<div class="st-dist">${s._d < 1 ? Math.round(s._d * 1000) + " м" : s._d.toFixed(1) + " км"}</div>` : ""}
-    </div>`).join("");
+    </div>`;
+  }).join("");
   el.querySelectorAll(".st-item").forEach((it) =>
     it.addEventListener("click", () => {
       const id = +it.dataset.id, s = state.stations.get(id);
@@ -250,8 +276,10 @@ function buildFilters() {
   }));
 
   const stEl = document.getElementById("status-chips");
-  stEl.innerHTML = state.meta.statuses.map((s) =>
-    `<div class="chip" data-status="${s}"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${COLORS[state.meta.status_color[s]]};margin-right:5px"></span>${statusLabel(s)}</div>`).join("");
+  stEl.innerHTML = state.meta.statuses.map((s) => {
+    const col = COLORS[state.meta.status_color[s]];
+    return `<div class="chip" data-status="${s}" style="--cc:${col}"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${col};margin-right:5px"></span>${statusLabel(s)}</div>`;
+  }).join("");
   stEl.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {
     const s = c.dataset.status;
     state.status = state.status === s ? null : s;
@@ -260,7 +288,10 @@ function buildFilters() {
   }));
 
   const brEl = document.getElementById("brand-chips");
-  brEl.innerHTML = KNOWN_BRANDS.map((b) => `<div class="chip" data-brand="${esc(b)}">${esc(b)}</div>`).join("");
+  brEl.innerHTML = KNOWN_BRANDS.map((b) => {
+    const logo = BRAND_LOGO[b];
+    return `<div class="chip ${logo ? "brand-chip" : ""}" data-brand="${esc(b)}">${logo ? `<img src="/img/brands/${logo.f}.png" alt="">` : ""}${esc(b)}</div>`;
+  }).join("");
   brEl.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {
     const b = c.dataset.brand;
     if (state.brands.has(b)) state.brands.delete(b); else state.brands.add(b);
@@ -272,11 +303,19 @@ function buildFilters() {
     state.onlyData = e.target.checked; loadStations();
   });
 
-  // legend
-  document.getElementById("legend").innerHTML =
-    state.meta.statuses.map((s) =>
+  // legend (collapsible)
+  const legend = document.getElementById("legend");
+  const rows = state.meta.statuses.map((s) =>
       `<div class="row"><span class="dot" style="background:${COLORS[state.meta.status_color[s]]}"></span>${statusLabel(s)}</div>`).join("") +
     `<div class="row"><span class="dot" style="background:${COLORS.gray}"></span>Нет данных</div>`;
+  legend.innerHTML =
+    `<div class="legend-head" id="legend-head"><span>Статусы</span><span class="chev">▾</span></div>` +
+    `<div class="legend-body">${rows}</div>`;
+  if (localStorage.getItem("azs_legend") === "0") legend.classList.add("collapsed");
+  document.getElementById("legend-head").addEventListener("click", () => {
+    const c = legend.classList.toggle("collapsed");
+    localStorage.setItem("azs_legend", c ? "0" : "1");
+  });
 }
 
 /* ---------------- station detail ---------------- */
@@ -442,9 +481,12 @@ async function toggleSub(id) {
 /* ---------------- geolocation ---------------- */
 function locate() {
   if (!navigator.geolocation) { toast("Геолокация недоступна"); return; }
+  const fab = document.getElementById("map-locate");
+  if (fab) fab.classList.add("locating");
   toast("Определяем местоположение…");
   navigator.geolocation.getCurrentPosition(
     (pos) => {
+      if (fab) fab.classList.remove("locating");
       state.user = { lat: pos.coords.latitude, lon: pos.coords.longitude };
       if (window._uMarker) map.removeLayer(window._uMarker);
       window._uMarker = L.circleMarker([state.user.lat, state.user.lon], {
@@ -452,7 +494,7 @@ function locate() {
       }).addTo(map).bindPopup("Вы здесь");
       map.setView([state.user.lat, state.user.lon], 14);
     },
-    () => toast("Не удалось определить местоположение"),
+    () => { if (fab) fab.classList.remove("locating"); toast("Не удалось определить местоположение"); },
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
@@ -467,9 +509,9 @@ async function openAnalytics() {
     const maxH = Math.max(1, ...a.by_hour.map((h) => h.total));
     body.innerHTML = `
       <div class="an-cards">
-        <div class="an-card"><div class="v">${a.totals.stations.toLocaleString("ru")}</div><div class="l">АЗС на карте</div></div>
-        <div class="an-card"><div class="v">${a.totals.reports_24h}</div><div class="l">Отчётов за 24ч</div></div>
-        <div class="an-card"><div class="v">${a.totals.reports_total}</div><div class="l">Всего отчётов</div></div>
+        <div class="an-card"><div class="v" data-count="${a.totals.stations}">0</div><div class="l">АЗС на карте</div></div>
+        <div class="an-card"><div class="v" data-count="${a.totals.reports_24h}">0</div><div class="l">Отчётов за 24ч</div></div>
+        <div class="an-card"><div class="v" data-count="${a.totals.reports_total}">0</div><div class="l">Всего отчётов</div></div>
       </div>
       <h4 style="color:var(--muted);font-size:12px;text-transform:uppercase">Регионы (по отчётам)</h4>
       <table class="an"><tr><th>Регион</th><th>Нет топлива</th><th>Очереди</th><th>Есть</th></tr>
@@ -482,7 +524,24 @@ async function openAnalytics() {
         return `<div class="bar" style="height:${Math.round((v / maxH) * 100)}%" title="${h}:00 — ${v}">${h % 6 === 0 ? `<span>${h}</span>` : ""}</div>`;
       }).join("")}</div>
       <div style="height:18px"></div>`;
+    animateCounters(body);
   } catch (e) { body.innerHTML = `<div class="muted">${e.message}</div>`; }
+}
+function animateCounters(root) {
+  if (window.matchMedia("(prefers-reduced-motion:reduce)").matches) {
+    root.querySelectorAll("[data-count]").forEach((el) => { el.textContent = (+el.dataset.count).toLocaleString("ru"); });
+    return;
+  }
+  root.querySelectorAll("[data-count]").forEach((el) => {
+    const target = +el.dataset.count, dur = 900, t0 = performance.now();
+    const step = (t) => {
+      const p = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased).toLocaleString("ru");
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
 }
 
 /* ---------------- subscriptions ---------------- */
@@ -627,6 +686,8 @@ function maybeThankPrompt() {
 
 function bindUI() {
   document.getElementById("btn-locate").addEventListener("click", locate);
+  const fab = document.getElementById("map-locate");
+  if (fab) fab.addEventListener("click", locate);
   document.getElementById("btn-analytics").addEventListener("click", openAnalytics);
   document.getElementById("btn-subs").addEventListener("click", openSubs);
   document.querySelectorAll("[data-donate]").forEach((b) => b.addEventListener("click", openDonate));
