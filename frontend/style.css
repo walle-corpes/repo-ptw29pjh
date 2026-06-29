@@ -450,6 +450,7 @@ table.an tbody tr:hover{background:var(--panel2)}
   background:var(--overlay);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
   box-shadow:var(--shadow),0 0 0 1px rgba(31,107,255,.1);animation:installIn .5s var(--ease) both;
 }
+.install-banner[hidden]{display:none!important}
 @keyframes installIn{from{opacity:0;transform:translateX(-50%) translateY(24px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 .install-banner.closing{animation:installOut .3s var(--ease) both}
 @keyframes installOut{to{opacity:0;transform:translateX(-50%) translateY(24px)}}

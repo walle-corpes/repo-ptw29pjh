@@ -1,5 +1,5 @@
 /* АЗС Онлайн Табло — service worker */
-const CACHE = "azs-static-v1";
+const CACHE = "azs-static-v2";
 const ASSETS = [
   "/",
   "/index.html",
@@ -38,21 +38,19 @@ self.addEventListener("fetch", (e) => {
   if (url.pathname.startsWith("/api/") || /basemaps\.cartocdn\.com/.test(url.host)) {
     return;
   }
-  // cache-first for same-origin static assets, with background refresh
+  // network-first for same-origin assets: always fresh when online,
+  // fall back to cache only when offline
   if (url.origin === self.location.origin) {
     e.respondWith(
-      caches.match(req).then((cached) => {
-        const network = fetch(req)
-          .then((res) => {
-            if (res && res.status === 200) {
-              const copy = res.clone();
-              caches.open(CACHE).then((c) => c.put(req, copy));
-            }
-            return res;
-          })
-          .catch(() => cached);
-        return cached || network;
-      })
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req).then((c) => c || caches.match("/")))
     );
   }
 });
