@@ -1,0 +1,16 @@
+[Unit]
+Description=АЗС Онлайн — Telegram moderation bot (long-polling worker)
+After=network.target azs-online.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/azs-online
+Environment=AZS_DATA_DIR=/opt/azs-online/backend/data
+EnvironmentFile=-/opt/azs-online/backend/.env
+ExecStart=/opt/azs-online/.venv/bin/python -m backend.app.bot_worker
+Restart=always
+RestartSec=5
+MemoryMax=150M
+
+[Install]
+WantedBy=multi-user.target

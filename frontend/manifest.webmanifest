@@ -1,0 +1,19 @@
+{
+  "name": "АЗС Онлайн Табло — где есть бензин",
+  "short_name": "АЗС Табло",
+  "description": "Карта АЗС России: наличие топлива и очереди в реальном времени от водителей",
+  "lang": "ru",
+  "start_url": "/?utm_source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0A1222",
+  "theme_color": "#0A1222",
+  "categories": ["navigation", "travel", "utilities"],
+  "icons": [
+    { "src": "/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/img/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/img/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
