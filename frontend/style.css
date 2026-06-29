@@ -188,6 +188,53 @@ body,.topbar,.panel,.btn,.chip,.modal-card,.legend,.comm,.st-item,.fuel-cell,.an
 .leaflet-top.leaflet-left{transition:margin-top .2s var(--ease)}
 .layout:has(.panel.collapsed) .leaflet-top.leaflet-left{margin-top:118px}
 
+/* ---------- donate button ---------- */
+.btn.donate{
+  background:linear-gradient(135deg,#ff5e8a,#ff3d6e 55%,#e21f57);color:#fff;font-weight:600;
+  box-shadow:0 6px 20px rgba(226,31,87,.4);border:0;
+}
+.btn.donate:hover{box-shadow:0 9px 26px rgba(226,31,87,.6)}
+#btn-donate{animation:donatePulse 3.2s var(--ease) infinite}
+@keyframes donatePulse{0%,100%{box-shadow:0 6px 20px rgba(226,31,87,.4)}50%{box-shadow:0 6px 26px rgba(226,31,87,.75)}}
+
+/* ---------- support card (panel) ---------- */
+.support{padding:14px;border-top:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,#ff3d6e 8%,var(--panel2)),var(--panel2))}
+.support-ttl{font-weight:700;font-size:14px}
+.support-sub{margin:6px 0 10px;font-size:12.5px;color:var(--muted);line-height:1.4}
+
+/* ---------- donate modal ---------- */
+.don-pitch{margin:0 0 14px;font-size:14px;line-height:1.5}
+.don-goal{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:16px}
+.don-goal-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:8px}
+.don-goal-top b{font-size:14px}
+.don-bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.don-bar>span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ff5e8a,#e21f57);transition:width .8s var(--ease)}
+.don-goal-sub{font-size:11.5px;margin-top:7px}
+.don-section-t{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.don-amts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.don-amt{padding:9px 14px;border-radius:11px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;transition:.18s var(--ease)}
+.don-amt:hover{border-color:#ff5e8a;transform:translateY(-1px)}
+.don-amt.active{border-color:#e21f57;background:color-mix(in srgb,#e21f57 16%,var(--bg2));box-shadow:0 0 0 3px rgba(226,31,87,.18)}
+.don-custom{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:11px;background:var(--bg2);padding:0 12px}
+.don-custom input{width:104px;border:0;background:transparent;color:var(--text);font-size:14px;padding:9px 0;outline:none}
+.don-custom span{color:var(--muted);font-size:13px}
+.don-methods{display:flex;flex-direction:column;gap:9px}
+.don-method{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:var(--bg2);color:var(--text);text-decoration:none;cursor:pointer;transition:.18s var(--ease);text-align:left}
+.don-method:hover{transform:translateY(-2px);border-color:#ff5e8a;box-shadow:var(--shadow-sm)}
+.dm-ic{flex:0 0 auto;width:38px;height:38px;border-radius:10px;background:color-mix(in srgb,#e21f57 14%,var(--panel2));display:flex;align-items:center;justify-content:center;font-size:18px}
+.don-method.m-yoomoney .dm-ic::before{content:"💳"}
+.don-method.m-tinkoff .dm-ic::before{content:"🏦"}
+.don-method.m-sbp .dm-ic::before{content:"📲"}
+.don-method.m-card .dm-ic::before{content:"💳"}
+.don-method.m-boosty .dm-ic::before{content:"🚀"}
+.don-method.m-da .dm-ic::before{content:"🔔"}
+.dm-tx{flex:1;display:flex;flex-direction:column;line-height:1.25}
+.dm-tx b{font-size:14px}
+.dm-tx span{font-size:12px;color:var(--muted)}
+.dm-go{color:var(--muted);font-size:18px}
+.don-empty{padding:14px;border:1px dashed var(--line);border-radius:13px;color:var(--muted);font-size:13px;text-align:center}
+.don-foot{font-size:11.5px;margin:16px 0 0;line-height:1.4}
+
 /* ---------- communities ---------- */
 .communities{padding:12px 14px;border-top:1px solid var(--line);background:var(--panel2)}
 .comm-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}

@@ -13,6 +13,22 @@ const SOCIAL = {
   max: "https://max.ru",
 };
 
+// Монетизация — добровольные пожертвования («народный сервис»).
+// Заполните реальные реквизиты — методы без значения скрываются автоматически.
+const DONATE = {
+  goal: 15000,            // месячная цель сбора, ₽ (сервер, домен, карты, разработка)
+  raised: 0,              // уже собрано в этом месяце, ₽
+  presets: [100, 300, 500, 1000],
+  card: "",               // номер карты для перевода, напр. "2202 2050 0000 0000"
+  cardName: "",           // получатель, напр. "Иван И."
+  sbpPhone: "",           // телефон для СБП, напр. "+7 900 000-00-00"
+  sbpBank: "",            // банк для СБП, напр. "Т-Банк"
+  yoomoney: "",           // кошелёк ЮMoney (только цифры), напр. "4100111111111111"
+  tinkoff: "",            // ссылка Тинькофф, напр. "https://www.tinkoff.ru/cf/XXXXXXXX"
+  boosty: "",             // https://boosty.to/your-project
+  donationalerts: "",     // https://www.donationalerts.com/r/your-project
+};
+
 const COLORS = {
   green: "#22c55e", amber: "#84cc16", yellow: "#f5c518",
   red: "#ef4444", black: "#0b0f17", gray: "#64748b",
@@ -397,6 +413,7 @@ async function submitReport() {
     toast("Спасибо! Статус обновлён");
     await openStation(state.selected.id);
     loadStations();
+    maybeThankPrompt();
   } catch (e) { toast(e.message); btn.disabled = false; btn.textContent = "Отправить"; }
 }
 
@@ -522,10 +539,97 @@ function toggleTheme() {
 function show(id) { document.getElementById(id).hidden = false; }
 function closeModals() { document.querySelectorAll(".modal").forEach((m) => (m.hidden = true)); }
 
+/* ---------------- donations ---------------- */
+const fmtRub = (n) => Number(n).toLocaleString("ru-RU") + " ₽";
+function copyText(txt) {
+  const done = () => toast("Скопировано: " + txt);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done, () => done());
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    ta.remove(); done();
+  }
+}
+function openDonate() {
+  show("donate-modal");
+  const body = document.getElementById("donate-body");
+  const pct = DONATE.goal > 0 ? Math.min(100, Math.round((DONATE.raised / DONATE.goal) * 100)) : 0;
+  const goalRow = DONATE.goal > 0 ? `
+    <div class="don-goal">
+      <div class="don-goal-top"><span>Собрано в этом месяце</span><b>${fmtRub(DONATE.raised)} / ${fmtRub(DONATE.goal)}</b></div>
+      <div class="don-bar"><span style="width:${pct}%"></span></div>
+      <div class="don-goal-sub muted">Идёт на серверы, карты, домен и развитие сервиса</div>
+    </div>` : "";
+
+  const presets = DONATE.presets.map((a) => `<button class="don-amt" data-amt="${a}">${a} ₽</button>`).join("");
+
+  body.innerHTML = `
+    <p class="don-pitch">«АЗС Онлайн Табло» — бесплатный народный сервис на данных самих водителей. Реклама не висит, данные открыты. Но серверы, карты и развитие стоят денег. Поддержите проект — даже небольшой вклад помогает держать сервис живым ❤️</p>
+    ${goalRow}
+    <div class="don-section-t">Сумма</div>
+    <div class="don-amts">${presets}
+      <div class="don-custom"><input id="don-custom" type="number" min="10" inputmode="numeric" placeholder="Своя сумма"><span>₽</span></div>
+    </div>
+    <div id="don-methods" class="don-methods"></div>
+    <p class="don-foot muted">Пожертвование добровольное и не даёт коммерческих обязательств. Спасибо, что помогаете 🙌</p>
+  `;
+
+  const methodsEl = body.querySelector("#don-methods");
+  let amount = DONATE.presets[1] || 300;
+  const amtBtns = body.querySelectorAll(".don-amt");
+  const custom = body.querySelector("#don-custom");
+  const markAmt = () => amtBtns.forEach((b) => b.classList.toggle("active", +b.dataset.amt === amount));
+  amtBtns.forEach((b) => b.addEventListener("click", () => { amount = +b.dataset.amt; custom.value = ""; markAmt(); renderMethods(); }));
+  custom.addEventListener("input", () => { const v = parseInt(custom.value, 10); if (v > 0) { amount = v; markAmt(); renderMethods(); } });
+  markAmt();
+
+  function methodBtn(cls, label, sub, onClick, href) {
+    const a = document.createElement(href ? "a" : "button");
+    a.className = "don-method " + cls;
+    if (href) { a.href = href; a.target = "_blank"; a.rel = "noopener"; }
+    a.innerHTML = `<span class="dm-ic"></span><span class="dm-tx"><b>${label}</b><span>${sub}</span></span><span class="dm-go">→</span>`;
+    if (onClick) a.addEventListener("click", onClick);
+    return a;
+  }
+  function renderMethods() {
+    methodsEl.innerHTML = "";
+    const a = Math.max(10, amount || 0);
+    if (DONATE.yoomoney) {
+      const url = `https://yoomoney.ru/quickpay/confirm?receiver=${encodeURIComponent(DONATE.yoomoney)}&quickpay-form=donate&sum=${a}&label=azs-online`;
+      methodsEl.appendChild(methodBtn("m-yoomoney", "ЮMoney / карта", `Оплата ${fmtRub(a)} онлайн`, null, url));
+    }
+    if (DONATE.tinkoff)
+      methodsEl.appendChild(methodBtn("m-tinkoff", "Тинькофф", "Перевод по ссылке банка", null, DONATE.tinkoff));
+    if (DONATE.sbpPhone)
+      methodsEl.appendChild(methodBtn("m-sbp", "СБП по номеру", `${DONATE.sbpPhone}${DONATE.sbpBank ? " · " + DONATE.sbpBank : ""} — копировать`, () => copyText(DONATE.sbpPhone)));
+    if (DONATE.card)
+      methodsEl.appendChild(methodBtn("m-card", "Перевод на карту", `${DONATE.card}${DONATE.cardName ? " · " + DONATE.cardName : ""} — копировать`, () => copyText(DONATE.card)));
+    if (DONATE.boosty)
+      methodsEl.appendChild(methodBtn("m-boosty", "Boosty", "Регулярная подписка на проект", null, DONATE.boosty));
+    if (DONATE.donationalerts)
+      methodsEl.appendChild(methodBtn("m-da", "DonationAlerts", "Разовое пожертвование", null, DONATE.donationalerts));
+    if (!methodsEl.children.length)
+      methodsEl.innerHTML = `<div class="don-empty">Реквизиты для пожертвований скоро появятся. Спасибо за желание поддержать!</div>`;
+  }
+  renderMethods();
+}
+function maybeThankPrompt() {
+  if (localStorage.getItem("azs_don_asked")) return;
+  localStorage.setItem("azs_don_asked", "1");
+  setTimeout(() => {
+    closeModals();
+    show("donate-modal");
+    openDonate();
+  }, 900);
+}
+
 function bindUI() {
   document.getElementById("btn-locate").addEventListener("click", locate);
   document.getElementById("btn-analytics").addEventListener("click", openAnalytics);
   document.getElementById("btn-subs").addEventListener("click", openSubs);
+  document.querySelectorAll("[data-donate]").forEach((b) => b.addEventListener("click", openDonate));
   applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
   document.getElementById("btn-theme").addEventListener("click", toggleTheme);
   const link = (id, url) => { const a = document.getElementById(id); if (a) a.href = url; };

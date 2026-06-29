@@ -24,6 +24,7 @@
     </div>
   </div>
   <div class="topbar-actions">
+    <button id="btn-donate" class="btn donate" data-donate title="Поддержать проект">❤️ <span class="hide-sm">Поддержать</span></button>
     <button id="btn-theme" class="btn ghost icon-only" title="Светлая / тёмная тема">🌙</button>
     <button id="btn-analytics" class="btn ghost" title="Аналитика">📊 <span class="hide-sm">Аналитика</span></button>
     <button id="btn-subs" class="btn ghost" title="Мои подписки">🔔 <span class="hide-sm">Подписки</span></button>
@@ -64,6 +65,14 @@
       <div class="empty">Нажмите «📍 Рядом», чтобы увидеть ближайшие заправки и расстояние до них.</div>
     </div>
 
+    <div class="support">
+      <div class="support-top">
+        <span class="support-ttl">❤️ Народный сервис</span>
+      </div>
+      <p class="support-sub">Сервис бесплатный и живёт на пожертвованиях. Поддержите, чтобы карта работала и развивалась.</p>
+      <button class="btn donate block" data-donate>Поддержать проект</button>
+    </div>
+
     <div class="communities">
       <div class="comm-title">Наши сообщества</div>
       <div class="comm-links">
@@ -101,6 +110,17 @@
       <button class="modal-close" data-close="analytics-modal">✕</button>
     </div>
     <div id="analytics-body" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- Donate -->
+<div class="modal" id="donate-modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>❤️ Поддержать проект</h3>
+      <button class="modal-close" data-close="donate-modal">✕</button>
+    </div>
+    <div id="donate-body" class="modal-body"></div>
   </div>
 </div>
 
