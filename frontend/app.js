@@ -533,8 +533,9 @@ function bindUI() {
   document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeModals));
   document.querySelectorAll(".modal").forEach((m) => m.addEventListener("click", (e) => { if (e.target === m) closeModals(); }));
   const panel = document.getElementById("panel");
-  document.getElementById("panel-toggle").addEventListener("click", () => panel.classList.add("collapsed"));
-  document.getElementById("panel-open").addEventListener("click", () => panel.classList.toggle("collapsed"));
+  const refitMap = () => { if (map) setTimeout(() => map.invalidateSize(), 340); };
+  document.getElementById("panel-toggle").addEventListener("click", () => { panel.classList.add("collapsed"); refitMap(); });
+  document.getElementById("panel-open").addEventListener("click", () => { panel.classList.toggle("collapsed"); refitMap(); });
   document.getElementById("search").addEventListener("keydown", (e) => { if (e.key === "Enter") doSearch(e.target.value); });
 }
 
