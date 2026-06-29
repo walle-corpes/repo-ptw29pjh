@@ -3,6 +3,7 @@ import secrets
 import time
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -18,7 +19,7 @@ from .config import (
     STATUS_LABELS,
     STATUSES,
 )
-from .status import STATUS_COLOR, fuel_statuses, station_overall, window_expr
+from .status import STATUS_COLOR, fuel_statuses, overall_maps, station_overall, window_expr
 
 try:
     from PIL import Image  # noqa
@@ -27,6 +28,7 @@ except Exception:  # noqa: BLE001
     HAVE_PIL = False
 
 app = FastAPI(title="АЗС Онлайн Табло", docs_url="/api/docs", openapi_url="/api/openapi.json")
+app.add_middleware(GZipMiddleware, minimum_size=512)
 
 
 @app.on_event("startup")
@@ -87,9 +89,15 @@ def stations(
     params.append(limit)
 
     rows = conn.execute(" ".join(sql), params).fetchall()
+    latest_map, fresh_set = overall_maps(conn)
     out = []
     for r in rows:
-        st, last_at, confirms, stale = station_overall(conn, r["id"])
+        rec = latest_map.get(r["id"])
+        if rec is None:
+            st, last_at, confirms, stale = None, None, 0, False
+        else:
+            st, last_at, confirms = rec
+            stale = r["id"] not in fresh_set
         if only_with_data and st is None:
             continue
         if status and st != status:

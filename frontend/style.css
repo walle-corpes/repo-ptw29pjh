@@ -488,6 +488,8 @@ table.an tbody tr:hover{background:var(--panel2)}
 @media(max-width:720px){
   .panel{position:absolute;top:0;bottom:0;left:0;width:88%;max-width:340px;flex-basis:88%;box-shadow:var(--shadow);padding-top:60px;z-index:1100}
   .panel.collapsed{margin-left:-100%}
+  /* hide panel before JS runs so the map shows first (no menu flash) */
+  html.m-collapsed .panel{margin-left:-100%}
   .hide-sm{display:none}
   .brand-sub{display:none}
   .brand-logo{height:38px}

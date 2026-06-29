@@ -117,6 +117,7 @@ function setBaseLayer(theme) {
   if (baseLayer) map.removeLayer(baseLayer);
   baseLayer = L.tileLayer(url, {
     maxZoom: 20, subdomains: "abcd",
+    updateWhenIdle: true, updateWhenZooming: false, keepBuffer: 2, crossOrigin: true,
     attribution: '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> · CARTO',
   }).addTo(map);
   if (baseLayer.bringToBack) baseLayer.bringToBack();
@@ -716,6 +717,8 @@ async function boot() {
   bindUI();
   // on phones: map is primary view, filters open via ☰
   if (isMobile()) document.getElementById("panel").classList.add("collapsed");
+  // release the pre-paint guard once JS owns the panel state
+  document.documentElement.classList.remove("m-collapsed");
   const refit = () => { if (map) map.invalidateSize(); };
   setTimeout(refit, 100);
   window.addEventListener("resize", debounce(refit, 250));
