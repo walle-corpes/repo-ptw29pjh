@@ -1,0 +1,16 @@
+[Unit]
+Description=АЗС Онлайн Табло (FastAPI)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/azs-online
+Environment=AZS_DATA_DIR=/opt/azs-online/backend/data
+ExecStart=/opt/azs-online/.venv/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8011 --workers 1
+Restart=always
+RestartSec=3
+# keep memory footprint modest on a 1GB box
+MemoryMax=400M
+
+[Install]
+WantedBy=multi-user.target

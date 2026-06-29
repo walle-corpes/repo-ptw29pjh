@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>АЗС Онлайн Табло — где сейчас есть бензин</title>
+<meta name="description" content="Интерактивная карта АЗС России: где сейчас есть бензин, где очереди, где пусто. Статусы топлива в реальном времени от водителей." />
+<meta name="theme-color" content="#0A1222" />
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png" />
+<link rel="apple-touch-icon" href="/img/icon-180.png" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="stylesheet" href="/vendor/leaflet.css" />
+<link rel="stylesheet" href="/vendor/MarkerCluster.css" />
+<link rel="stylesheet" href="/vendor/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="/img/logo.png" alt="АЗС Онлайн Табло" class="brand-logo" />
+    <div class="brand-text">
+      <span class="brand-title">АЗС <b>Онлайн Табло</b></span>
+      <span class="brand-sub">наличие топлива и очереди в реальном времени</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button id="btn-analytics" class="btn ghost" title="Аналитика">📊 <span class="hide-sm">Аналитика</span></button>
+    <button id="btn-subs" class="btn ghost" title="Мои подписки">🔔 <span class="hide-sm">Подписки</span></button>
+    <button id="btn-locate" class="btn primary" title="Моё местоположение">📍 <span class="hide-sm">Рядом</span></button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="panel" id="panel">
+    <div class="panel-head">
+      <input id="search" type="search" placeholder="Поиск: город, бренд, название…" autocomplete="off" />
+      <button id="panel-toggle" class="panel-toggle" title="Свернуть">⟨</button>
+    </div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label>Тип топлива</label>
+        <div id="fuel-chips" class="chips"></div>
+      </div>
+      <div class="filter-group">
+        <label>Статус</label>
+        <div id="status-chips" class="chips"></div>
+      </div>
+      <div class="filter-group">
+        <label>Бренд</label>
+        <div id="brand-chips" class="chips brand-chips"></div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="only-data" /> <span>Только с данными от водителей</span>
+      </label>
+    </div>
+
+    <div class="list-head">
+      <span id="list-title">Ближайшие АЗС</span>
+      <span id="list-count" class="muted"></span>
+    </div>
+    <div id="station-list" class="station-list">
+      <div class="empty">Нажмите «📍 Рядом», чтобы увидеть ближайшие заправки и расстояние до них.</div>
+    </div>
+    <div class="panel-foot muted" id="stats-foot"></div>
+  </aside>
+
+  <main class="map-wrap">
+    <div id="map"></div>
+    <div class="legend" id="legend"></div>
+    <button id="panel-open" class="panel-open" title="Фильтры и список">☰</button>
+  </main>
+</div>
+
+<!-- Station detail -->
+<div class="modal" id="station-modal" hidden>
+  <div class="modal-card" id="station-card"></div>
+</div>
+
+<!-- Analytics -->
+<div class="modal" id="analytics-modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📊 Аналитика</h3>
+      <button class="modal-close" data-close="analytics-modal">✕</button>
+    </div>
+    <div id="analytics-body" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- Subscriptions -->
+<div class="modal" id="subs-modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🔔 Мои подписки</h3>
+      <button class="modal-close" data-close="subs-modal">✕</button>
+    </div>
+    <div id="subs-body" class="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="/vendor/leaflet.js"></script>
+<script src="/vendor/leaflet.markercluster.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
