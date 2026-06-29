@@ -13,17 +13,19 @@ import httpx
 from .brands import fuels_from_tags, normalize_brand
 from .db import cursor, init_db, set_meta
 
+# Ordered fastest-first; mirrors that hang for this server are omitted.
 OVERPASS_ENDPOINTS = [
-    "https://overpass-api.de/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter",
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
-    "https://overpass.openstreetmap.ru/api/interpreter",
+    "https://overpass-api.de/api/interpreter",
 ]
+
+# Per-request timeout (s). Kept low so a slow mirror fails over quickly.
+REQUEST_TIMEOUT = 90
 
 # Bounding box covering Russia (antimeridian sliver of Chukotka omitted).
 LAT_MIN, LAT_MAX = 41.0, 78.0
 LON_MIN, LON_MAX = 19.0, 180.0
-TILE = 6.0  # degrees per tile
+TILE = 3.0  # degrees per tile
 
 
 def _tiles():
@@ -39,7 +41,7 @@ def _tiles():
 def _query(bbox):
     s, w, n, e = bbox
     return (
-        f"[out:json][timeout:180];"
+        f"[out:json][timeout:120];"
         f"("
         f'node["amenity"="fuel"]({s},{w},{n},{e});'
         f'way["amenity"="fuel"]({s},{w},{n},{e});'
@@ -51,15 +53,16 @@ def _query(bbox):
 def _fetch(bbox, client):
     q = _query(bbox)
     last_err = None
-    for ep in OVERPASS_ENDPOINTS:
-        try:
-            r = client.post(ep, data={"data": q}, timeout=200)
-            if r.status_code == 200:
-                return r.json().get("elements", [])
-            last_err = f"{ep} -> HTTP {r.status_code}"
-        except Exception as exc:  # noqa: BLE001
-            last_err = f"{ep} -> {exc}"
-        time.sleep(2)
+    for _ in range(2):
+        for ep in OVERPASS_ENDPOINTS:
+            try:
+                r = client.post(ep, data={"data": q}, timeout=REQUEST_TIMEOUT)
+                if r.status_code == 200:
+                    return r.json().get("elements", [])
+                last_err = f"{ep} -> HTTP {r.status_code}"
+            except Exception as exc:  # noqa: BLE001
+                last_err = f"{ep} -> {exc}"
+            time.sleep(1)
     raise RuntimeError(f"all overpass endpoints failed: {last_err}")
 
 
