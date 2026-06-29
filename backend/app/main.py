@@ -369,6 +369,17 @@ def health():
     return {"ok": True}
 
 
+# ---------------------------------------------------------------- content pages
+@app.get("/about", include_in_schema=False)
+def about_page():
+    return FileResponse(FRONTEND_DIR / "about.html")
+
+
+@app.get("/privacy", include_in_schema=False)
+def privacy_page():
+    return FileResponse(FRONTEND_DIR / "privacy.html")
+
+
 # ---------------------------------------------------------------- static frontend
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")

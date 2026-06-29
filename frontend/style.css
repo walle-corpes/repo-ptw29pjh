@@ -522,3 +522,33 @@ table.an tbody tr:hover{background:var(--panel2)}
   .layout:has(.panel.collapsed) .leaflet-top.leaflet-left{margin-top:112px}
   .panel-open{top:64px}
 }
+
+/* ---------------- content pages (about / privacy) ---------------- */
+.doc{min-height:100%;background:radial-gradient(1200px 600px at 50% -10%,var(--bg2),var(--bg))}
+.doc-bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;
+  padding:14px 18px;background:var(--overlay);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line)}
+.doc-bar .brand-logo{height:34px}
+.doc-bar .brand-title{font-size:16px}
+.doc-bar .spacer{flex:1}
+.doc-bar .btn{padding:8px 14px;font-size:13px}
+.doc-wrap{max-width:760px;margin:0 auto;padding:34px 20px 80px}
+.doc-wrap h1{font-size:28px;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
+.doc-lead{color:var(--muted);font-size:15px;margin:0 0 26px}
+.doc-wrap h2{font-size:18px;margin:30px 0 10px;letter-spacing:-.01em}
+.doc-wrap p,.doc-wrap li{font-size:15px;line-height:1.7;color:var(--text)}
+.doc-wrap p{margin:0 0 12px}
+.doc-wrap ul{margin:0 0 14px;padding-left:20px}
+.doc-wrap li{margin:4px 0}
+.doc-wrap a{color:var(--blue2)}
+.doc-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;margin:14px 0;box-shadow:var(--shadow-sm)}
+.doc-meta{margin-top:24px;font-size:13px;color:var(--muted)}
+.doc-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:18px 0}
+.doc-cards .doc-card{margin:0}
+.doc-card h3{margin:0 0 6px;font-size:15.5px}
+.doc-card p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.55}
+.doc-cta{display:inline-flex;margin-top:8px}
+.panel-links{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:12.5px}
+.panel-links a{color:var(--muted);text-decoration:none}
+.panel-links a:hover{color:var(--blue2)}
