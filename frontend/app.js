@@ -1,5 +1,18 @@
 "use strict";
 
+// Apply saved theme before first paint to avoid flash. Default: dark.
+(function () {
+  const t = localStorage.getItem("azs_theme") || "dark";
+  document.documentElement.dataset.theme = t;
+})();
+
+// Ссылки на сообщества. Замените на реальные адреса ваших групп.
+const SOCIAL = {
+  vk: "https://vk.com",
+  tg: "https://t.me",
+  max: "https://max.ru",
+};
+
 const COLORS = {
   green: "#22c55e", amber: "#84cc16", yellow: "#f5c518",
   red: "#ef4444", black: "#0b0f17", gray: "#64748b",
@@ -431,6 +444,20 @@ async function doSearch(q) {
 }
 
 /* ---------------- modals & ui ---------------- */
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem("azs_theme", t);
+  const btn = document.getElementById("btn-theme");
+  if (btn) {
+    btn.textContent = t === "light" ? "☀️" : "🌙";
+    btn.title = t === "light" ? "Тёмная тема" : "Светлая тема";
+  }
+}
+function toggleTheme() {
+  const cur = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+  applyTheme(cur === "light" ? "dark" : "light");
+}
+
 function show(id) { document.getElementById(id).hidden = false; }
 function closeModals() { document.querySelectorAll(".modal").forEach((m) => (m.hidden = true)); }
 
@@ -438,6 +465,10 @@ function bindUI() {
   document.getElementById("btn-locate").addEventListener("click", locate);
   document.getElementById("btn-analytics").addEventListener("click", openAnalytics);
   document.getElementById("btn-subs").addEventListener("click", openSubs);
+  applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+  document.getElementById("btn-theme").addEventListener("click", toggleTheme);
+  const link = (id, url) => { const a = document.getElementById(id); if (a) a.href = url; };
+  link("comm-vk", SOCIAL.vk); link("comm-tg", SOCIAL.tg); link("comm-max", SOCIAL.max);
   document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeModals));
   document.querySelectorAll(".modal").forEach((m) => m.addEventListener("click", (e) => { if (e.target === m) closeModals(); }));
   const panel = document.getElementById("panel");
