@@ -95,16 +95,31 @@ function setBaseLayer(theme) {
 function initMap() {
   map = L.map("map", { zoomControl: true, preferCanvas: true }).setView([55.75, 37.62], 11);
   setBaseLayer(document.documentElement.dataset.theme === "light" ? "light" : "dark");
-  cluster = L.markerClusterGroup({ maxClusterRadius: 55, disableClusteringAtZoom: 15, chunkedLoading: true });
+  cluster = L.markerClusterGroup({ maxClusterRadius: 55, disableClusteringAtZoom: 13, chunkedLoading: true });
   map.addLayer(cluster);
   map.on("moveend", debounce(loadStations, 350));
 }
 
+const PUMP_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="#fff"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5z"/></svg>';
 function markerIcon(color, stale) {
   return L.divIcon({
     className: "",
-    html: `<div class="azs-marker ${stale ? "stale" : ""}" style="background:${COLORS[color] || COLORS.gray}"></div>`,
-    iconSize: [22, 22], iconAnchor: [11, 11],
+    html: `<div class="azs-pin ${stale ? "stale" : ""}" style="background:${COLORS[color] || COLORS.gray}"><span class="azs-pin-ic">${PUMP_SVG}</span></div>`,
+    iconSize: [28, 36], iconAnchor: [14, 34], popupAnchor: [0, -32],
+  });
+}
+
+const LABEL_ZOOM = 13;
+function updateLabels() {
+  const show = map.getZoom() >= LABEL_ZOOM;
+  state.markers.forEach((m, id) => {
+    const has = !!m.getTooltip();
+    if (show && !has) {
+      const s = state.stations.get(id);
+      m.bindTooltip(esc(s.name || "АЗС"), { permanent: true, direction: "top", offset: [0, -34], className: "azs-label" });
+    } else if (!show && has) {
+      m.unbindTooltip();
+    }
   });
 }
 
@@ -133,6 +148,7 @@ async function loadStations() {
     markers.push(m);
   }
   cluster.addLayers(markers);
+  updateLabels();
   document.getElementById("list-count").textContent = data.count + " на карте";
   renderList();
 }
