@@ -77,12 +77,8 @@ body,.topbar,.panel,.btn,.chip,.modal-card,.legend,.comm,.st-item,.fuel-cell,.an
 /* ---------- topbar ---------- */
 .topbar{
   height:60px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;background:var(--topbar);background-size:200% 100%;
-  border-bottom:1px solid var(--line);position:relative;z-index:1200;
-  box-shadow:0 2px 18px rgba(0,0,0,.28);
-  animation:sheen 14s linear infinite;
+  padding:0 16px;background:transparent;position:relative;z-index:1200;
 }
-@keyframes sheen{0%{background-position:0% 0}50%{background-position:100% 0}100%{background-position:0% 0}}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .brand-logo{height:44px;width:auto;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));transition:transform .4s var(--ease)}
 .brand:hover .brand-logo{transform:rotate(-6deg) scale(1.06)}
